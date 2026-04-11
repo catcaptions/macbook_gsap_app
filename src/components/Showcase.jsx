@@ -7,9 +7,9 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 gsap.registerPlugin(ScrollTrigger);
 
 export const Showcase = () => {
-  const isTablet = useMediaQuery({ query: '(min-width: 1024px)' })
+  const isDesktop = useMediaQuery({ query: '(min-width: 1025px)' })
   useGSAP(() => {
-    if (isTablet) {
+    if (isDesktop) {
       const timeline = gsap.timeline({
         scrollTrigger:{
           trigger: '#showcase',
@@ -27,7 +27,7 @@ export const Showcase = () => {
 
     }
 
-  }, [isTablet])
+  }, [isDesktop])
 
 
   return (

@@ -8,55 +8,57 @@ Source: https://sketchfab.com/3d-models/macbook-pro-m3-16-inch-2024-8e34fc2b3031
 Title: macbook pro M3 16 inch 2024
 */
 
-import React, { useEffect } from 'react'
+import React, { useEffect, useMemo } from 'react'
 import { useGLTF, useTexture } from '@react-three/drei'
 import useMacbookStore from "../../store";
-import {Color, } from 'three'
 import {noChangeParts} from "../../constants/index.js"
+import { MeshBasicMaterial } from 'three'
 
 export default function MacbookModel14(props) {
 
-  const { nodes, materials, scene } = useGLTF('/models/macbook-14-transformed.glb');
-  const {color} = useMacbookStore();
+  const { scene } = useGLTF('/models/macbook-14-transformed.glb');
+  const color = useMacbookStore((state) => state.color);
 
-  const texture = useTexture('/screen.png')
+  const texture = useTexture('/screen.png');
+  const screenMaterial = useMemo(() => new MeshBasicMaterial({ map: texture }), [texture]);
 
-  useEffect(()=>{
-    scene.traverse((child)=>{
-      if(child.isMesh){
-        // Change color only if the part name is not in he list noChangeParts
-        if(!noChangeParts.includes(child.name)){
-            child.material.color = new Color(color);
+  const modelScene = useMemo(() => scene.clone(true), [scene]);
+
+  useEffect(() => {
+    modelScene.traverse((child) => {
+      if (!child.isMesh) return;
+
+      // Keep the screen textured (and not recolored).
+      if (child.name === 'Object_123') {
+        if (!child.userData.screenMaterialApplied) {
+          child.material = screenMaterial;
+          child.userData.screenMaterialApplied = true;
         }
+        return;
       }
-    })
-  },[color, scene])
+
+      if (noChangeParts.includes(child.name)) return;
+
+      const materialList = Array.isArray(child.material) ? child.material : [child.material];
+
+      if (!child.userData.materialCloned) {
+        const cloned = materialList.map((material) => material?.clone?.() ?? material);
+        child.material = Array.isArray(child.material) ? cloned : cloned[0];
+        child.userData.materialCloned = true;
+      }
+
+      const activeMaterials = Array.isArray(child.material) ? child.material : [child.material];
+      activeMaterials.forEach((material) => {
+        if (!material?.color) return;
+        material.color.set(color);
+        material.needsUpdate = true;
+      });
+    });
+  }, [color, modelScene, screenMaterial]);
 
 
   return (
-    <group {...props} dispose={null}>
-      <mesh geometry={nodes.Object_10.geometry} material={materials.PaletteMaterial001} rotation={[Math.PI / 2, 0, 0]} />
-      <mesh geometry={nodes.Object_16.geometry} material={materials.zhGRTuGrQoJflBD} rotation={[Math.PI / 2, 0, 0]} />
-      <mesh geometry={nodes.Object_20.geometry} material={materials.PaletteMaterial002} rotation={[Math.PI / 2, 0, 0]} />
-      <mesh geometry={nodes.Object_22.geometry} material={materials.lmWQsEjxpsebDlK} rotation={[Math.PI / 2, 0, 0]} />
-      <mesh geometry={nodes.Object_30.geometry} material={materials.LtEafgAVRolQqRw} rotation={[Math.PI / 2, 0, 0]} />
-      <mesh geometry={nodes.Object_32.geometry} material={materials.iyDJFXmHelnMTbD} rotation={[Math.PI / 2, 0, 0]} />
-      <mesh geometry={nodes.Object_34.geometry} material={materials.eJObPwhgFzvfaoZ} rotation={[Math.PI / 2, 0, 0]} />
-      <mesh geometry={nodes.Object_38.geometry} material={materials.nDsMUuDKliqGFdU} rotation={[Math.PI / 2, 0, 0]} />
-      <mesh geometry={nodes.Object_42.geometry} material={materials.CRQixVLpahJzhJc} rotation={[Math.PI / 2, 0, 0]} />
-      <mesh geometry={nodes.Object_48.geometry} material={materials.YYwBgwvcyZVOOAA} rotation={[Math.PI / 2, 0, 0]} />
-      <mesh geometry={nodes.Object_54.geometry} material={materials.SLGkCohDDelqXBu} rotation={[Math.PI / 2, 0, 0]} />
-      <mesh geometry={nodes.Object_58.geometry} material={materials.WnHKXHhScfUbJQi} rotation={[Math.PI / 2, 0, 0]} />
-      <mesh geometry={nodes.Object_66.geometry} material={materials.fNHiBfcxHUJCahl} rotation={[Math.PI / 2, 0, 0]} />
-      <mesh geometry={nodes.Object_74.geometry} material={materials.LpqXZqhaGCeSzdu} rotation={[Math.PI / 2, 0, 0]} />
-      <mesh geometry={nodes.Object_82.geometry} material={materials.gMtYExgrEUqPfln} rotation={[Math.PI / 2, 0, 0]} />
-      <mesh geometry={nodes.Object_96.geometry} material={materials.PaletteMaterial003} rotation={[Math.PI / 2, 0, 0]} />
-      <mesh geometry={nodes.Object_107.geometry} material={materials.JvMFZolVCdpPqjj} rotation={[Math.PI / 2, 0, 0]} />
-      <mesh geometry={nodes.Object_123.geometry} material={materials.sfCQkHOWyrsLmor} rotation={[Math.PI / 2, 0, 0]}>
-        <meshBasicMaterial map={texture} />
-      </mesh>
-      <mesh geometry={nodes.Object_127.geometry} material={materials.ZCDwChwkbBfITSW} rotation={[Math.PI / 2, 0, 0]} />
-    </group>
+    <primitive object={modelScene} dispose={null} {...props} />
   )
 }
 

@@ -2,6 +2,9 @@ import { useGSAP } from '@gsap/react'
 import React from 'react'
 import { useMediaQuery } from 'react-responsive'
 import gsap from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
+
+gsap.registerPlugin(ScrollTrigger)
 
 const Highlights = () => {
 
@@ -19,8 +22,7 @@ const Highlights = () => {
         duration: 1,
         ease: 'power1.inOut',
       })
-    })
-
+    }, [isMobile])
 
   return (
     <section id='highlights'>
@@ -31,12 +33,11 @@ const Highlights = () => {
         <div className='left-column'>
           <div>
             <img src="/laptop.png" alt="Laptop" />
-            <p>Fly through demanding talks up to 9x times faster. </p>
+            <p>Fly through demanding tasks up to 9x faster. </p>
           </div>
           <div>
             <img src="/sun.png" alt="Sun" />
-            <p>A stunnig <br /> Liquid Retina XRD <br /> display</p>
-          </div>
+            <p>A stunning <br /> Liquid Retina XDR <br /> display</p>          </div>
         </div>
         <div className='right-column'>
           <div className='apple-gradient'>

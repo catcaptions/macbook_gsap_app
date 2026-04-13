@@ -13,6 +13,13 @@ import { useGLTF, useVideoTexture } from '@react-three/drei'
 import { Color } from 'three'
 import useMacbookStore from '../../store'
 
+/**
+ * Render a GLTF macbook model whose materials are recolored from store state while preserving a video-textured screen.
+ *
+ * Renders the loaded GLB as a group of meshes, applies the store-selected color to mesh materials except the designated screen part, and assigns a video texture to the screen mesh.
+ *
+ * @returns The React element containing the macbook model group with recolored materials and the screen using a video texture.
+ */
 export function MacbookModel(props) {
   const { nodes, materials, scene } = useGLTF('/models/macbook-transformed.glb')
   const color = useMacbookStore((state) => state.color)
